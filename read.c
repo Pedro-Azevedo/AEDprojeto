@@ -51,7 +51,7 @@ void memory_allocation_error(void) {
  *
  *****************************************************************************/
  
- void pass (char* information)
+ void path (char* information)
  {
 	 /*
 	char aux[5]={'\0'};
