@@ -89,13 +89,14 @@ void solve (FILE* input)
 	 
 	while (fscanf(input, "%s", line)==1)
 	{
-		/*path(line, &L, &C, &l, &c, &k, &l2, &c2); */
+		printf("%s\n", line);
+		/* path(line, &L, &C, &l, &c, &k, &l2, &c2);
 		table=(int**) calloc(L, sizeof(int*)); 
 		if(table==NULL)
 			memory_allocation_error(); 
 		for(i=0; i<L; i++)
 			table[i]=(int*) calloc(C, sizeof(int));
-		
+		/*
 		for(i=0; i<L; i++)
 		{
 			t=fscanf(input, "%s", line);
@@ -106,10 +107,10 @@ void solve (FILE* input)
 			
 		}
 		
-			 
+		 
 		for(i=0; i<L; i++)
 			free(table[i]); 
-		free(table);
+		free(table);*/
 	}
 	
 	return; 
