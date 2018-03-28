@@ -40,35 +40,22 @@ int main(int argc, char *argv[]) {
 	/* Number of arguments of different than 2 */
 	if(argc!=2)
 		exit(0); 
-	
-	name_input_file=(char*) calloc(strlen(argv[1]), sizeof(char*)); 
-	
-	if(name_input_file==NULL)
-		memory_allocation_error();
 		
-	strcpy(name_input_file, argv[1]);
+	name_input_file = argv[1];
 	
-	token = strtok(argv[1], delim); 
+	token = strtok(name_input_file, delim); 
 	token = strtok(NULL, delim); 
 	
 	if(token==NULL || strcmp(token, "1maps")!=0)
-	{
-		free(name_input_file);
 		exit(0); 
-	}
 	
+	strcat(name_input_file, ".1maps");
 	input = fopen(name_input_file, "r");
 	
 	if(input==NULL)
-	{
-		free(name_input_file);
 		exit(0);
-	} 
 		
 	solve (input);
-	
-	free(name_input_file);
-
 	fclose (input);
 	return 0; 
 }
