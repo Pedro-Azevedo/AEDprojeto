@@ -11,6 +11,18 @@
 
 #include "read.h"
 
+
+struct _tableinfo{
+	int L; 
+	int C;
+	int l;
+	int c;
+	int k;
+	int l2;
+	int c2;
+};
+
+
 /******************************************************************************
  * memory_allocation_error ()
  *
@@ -39,12 +51,13 @@ void memory_allocation_error(void) {
  *
  *****************************************************************************/
  
- void pass (char* information, int* L, int* C, int* l, int* c, int *k, int* l2, int* c2)
+ void pass (char* information)
  {
+	 /*
 	char aux[5]={'\0'};
 	sscanf(information, "%d %d %d %d %d %s", L, C, l, c, k, aux);
 	if(k==0)
-		sscanf(aux, "%d %d", l2, c2); 
+		sscanf(aux, "%d %d", l2, c2); */
 	return;
  }
  
@@ -83,20 +96,18 @@ void memory_allocation_error(void) {
 void solve (FILE* input)
 {
 	char line[MAX_WORD] = {'\0'};
-	int L=0, C=0, l=0, c=0, k=0, l2=0, c2=0;
-	int i=0, t=0;
 	int** table=NULL;
 	 
-	while (fscanf(input, "%s", line)==1)
+	while (fgets(line, sizeof(line), input)!=NULL)
 	{
 		printf("%s\n", line);
-		/* path(line, &L, &C, &l, &c, &k, &l2, &c2);
+		path(line);
+		/*
 		table=(int**) calloc(L, sizeof(int*)); 
 		if(table==NULL)
 			memory_allocation_error(); 
 		for(i=0; i<L; i++)
 			table[i]=(int*) calloc(C, sizeof(int));
-		/*
 		for(i=0; i<L; i++)
 		{
 			t=fscanf(input, "%s", line);

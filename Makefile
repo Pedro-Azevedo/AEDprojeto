@@ -7,8 +7,8 @@ amazeme: main.o read.o
 main.o: main.c read.h
 	$(CC) -c $(CFLAGS) main.c
 
-words.o: read.c read.h
-	$(CC) -c $(CFLAGS) words.c
+read.o: read.c read.h
+	$(CC) -c $(CFLAGS) read.c
 
 clean::
 	rm -f *.o core a.out amazeme *~

@@ -20,10 +20,13 @@
 #include <strings.h>
 
 #define MAX_WORD 10000
+#define Item void*
 
 
+typedef struct _tableinfo tableinfo;
+
+void path(char*);
 void solve (FILE*); 
-void path(char*, int*, int*, int*, int*, int*, int*, int*);
 int* filltable(char*); 
 void memory_allocation_error(void);
 
