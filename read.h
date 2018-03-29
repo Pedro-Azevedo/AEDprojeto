@@ -6,7 +6,7 @@
  * Last modified: 2018-03-28
  * 
  * COMMENTS
- *		Function prototype for reading file and produce solution
+ *		Function prototype for reading file and fill information
  *
  *****************************************************************************/
 
@@ -25,9 +25,9 @@
 
 typedef struct _tableinfo tableinfo;
 
-void path(char*);
 void solve (FILE*); 
-int* filltable(char*); 
-void memory_allocation_error(void);
+tableinfo fill_info_table(char*);
+int* fill_table_line(char*, int); 
+void memory_allocation_error(char*);
 
 #endif 

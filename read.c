@@ -9,9 +9,13 @@
  *
  *****************************************************************************/
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "read.h"
 
-
+/*Structure to store the information of the problem*/
 struct _tableinfo{
 	int L; 
 	int C;
@@ -26,60 +30,84 @@ struct _tableinfo{
 /******************************************************************************
  * memory_allocation_error ()
  *
- * Arguments: none
+ * Arguments: information - string to print with the memory error
  * Returns: (void)
- * Side-Effects: none
+ * Side-Effects: exits the program
  *
  * Description: message function when memory is not correctly allocated
  *
  *****************************************************************************/
 
-void memory_allocation_error(void) {
+void memory_allocation_error(char* information) {
 
-  printf("Error: Memory not correctly allocated\n");
+  printf("%s\n", information);
   exit(1);
 }
 
 /******************************************************************************
- * path()
+ * fill_info_table()
  *
- * Arguments: 
- * Returns: (void)
- * Side-Effects: passes by reference the informations
+ * Arguments: information - a string with the info to store in the structure
+ * Returns: info -> a strucutre with the info of the problem to solve
+ * Side-Effects: none
  *
- * Description: o explore the line of the input file that tells us what to do
+ * Description: store in a structure the information of the problem to solve
  *
  *****************************************************************************/
  
- void path (char* information)
+tableinfo fill_info_table (char* information)
  {
-	 /*
-	char aux[5]={'\0'};
-	sscanf(information, "%d %d %d %d %d %s", L, C, l, c, k, aux);
-	if(k==0)
-		sscanf(aux, "%d %d", l2, c2); */
-	return;
+	tableinfo info;
+	char* token=NULL;
+	
+	/*scan the information to the structure*/
+	sscanf(information, "%d %d %d %d %d", &info.L, &info.C, &info.l, &info.c, &info.k);
+	/* if info.k is zero there are 2 more parameteres to store */
+	if(info.k==0)
+	{
+		/* save the information after info.k*/
+		token=strtok(information, "0");
+		token=strtok(NULL, "0");
+		/*scan the information*/
+		sscanf(token, "%d %d", &info.l2, &info.c2);
+	}
+	return info;
  }
  
  
  /******************************************************************************
- * filltable()
+ * fill_table_line()
  *
- * Arguments: 
- * Returns: (void)
- * Side-Effects: passes by reference the informations
+ * Arguments: line - string with the numbers to store in the line of the table 
+ * 		      cols - number os columns in the table. 
+ * Returns: the line of the table filled with the numbers
+ * Side-Effects: none
  *
- * Description: o explore the line of the input file that tells us what to do
+ * Description: read a line of the file with numbers to store in a line of the table
  *
  *****************************************************************************/
  
- int* filltable (char* line)
+ int* fill_table_line (char* line, int cols)
  {
-	 int* cena=NULL;
-	 return cena;
+	 char* token=NULL;
+	 int* tableline=NULL;
+	 int j=0;
+	 
+	 /*Allocate memory to the line of the table*/
+	 tableline=(int*)calloc(cols, sizeof(int));
+	 if(tableline==NULL)
+		memory_allocation_error("Error: Could not allocate memory for tableline");
+	 
+	 /* Save the numbers (separated by a space) in the positions of the table line*/
+	 token=strtok(line, " ");
+	 for(j=0; j<cols; j++)
+	 {
+		 sscanf(token, "%d", &tableline[j]);
+		 token=strtok(NULL, " ");  
+	 }
+	 
+	 return tableline;
  }
- 
- 
  
 
 /******************************************************************************
@@ -87,41 +115,43 @@ void memory_allocation_error(void) {
  *
  * Arguments: input - input file to read to solve 
  * Returns: (void)
- * Side-Effects: none
+ * Side-Effects: reads from the file, save the problem information on a structure, store memory for the table 
+ * 			     and fill it with the info from the file (line by line, using other function). 
  *
- * Description: solve the problem
+ * Description: solve the problem(s)
  *
  *****************************************************************************/
 
 void solve (FILE* input)
 {
 	char line[MAX_WORD] = {'\0'};
+	tableinfo info;
 	int** table=NULL;
-	 
+	int i=0; 
+	
+	/*Read the file until the end*/
 	while (fgets(line, sizeof(line), input)!=NULL)
 	{
-		printf("%s\n", line);
-		path(line);
-		/*
-		table=(int**) calloc(L, sizeof(int*)); 
+		/*Skip an empty line*/
+		if(strcmp(line, "\n")==0)
+			continue;
+		info=fill_info_table(line); /*Fill a structure with the info to solve the problem */
+		/*Allocate memory to the table*/
+		table=(int**) calloc(info.L, sizeof(int*));
 		if(table==NULL)
-			memory_allocation_error(); 
-		for(i=0; i<L; i++)
-			table[i]=(int*) calloc(C, sizeof(int));
-		for(i=0; i<L; i++)
+			memory_allocation_error("Error: Could not allocate memory for table");
+		/*Work on the lines of the table: real the line from the file and fill it in other function */
+		for(i=0; i<info.L; i++)
 		{
-			t=fscanf(input, "%s", line);
-			if(t==1)
-			{
-				;
-			}
-			
+			fgets(line, sizeof(line), input); 
+			table[i]=fill_table_line(line, info.C); 
 		}
 		
-		 
-		for(i=0; i<L; i++)
-			free(table[i]); 
-		free(table);*/
+		/*Free the table memory for this problem*/
+		for(i=0; i<info.L; i++)
+			free(table[i]);
+		free (table);
+		/*Continue to the next problem*/
 	}
 	
 	return; 

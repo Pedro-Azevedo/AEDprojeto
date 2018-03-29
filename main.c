@@ -34,7 +34,6 @@ int main(int argc, char *argv[]) {
 	
 	FILE* input=NULL;
 	char* name_input_file=NULL; 
-	char delim[2]="."; 
 	char* token = NULL;
 	
 	/* Number of arguments of different than 2 */
@@ -43,19 +42,26 @@ int main(int argc, char *argv[]) {
 		
 	name_input_file = argv[1];
 	
-	token = strtok(name_input_file, delim); 
-	token = strtok(NULL, delim); 
+	/*Separate the extension from the name of the file*/
+	token = strtok(name_input_file, "."); 
+	token = strtok(NULL, "."); 
 	
+	/* Verify if the extension either doesn't exist or is different than 1maps)*/
 	if(token==NULL || strcmp(token, "1maps")!=0)
 		exit(0); 
 	
+	/*Put the extension again on the file name*/
 	strcat(name_input_file, ".1maps");
+	/*Open the file and verify*/
 	input = fopen(name_input_file, "r");
 	
 	if(input==NULL)
 		exit(0);
-		
+	
+	/*read the input file */ 
 	solve (input);
+	
+	/*close files*/ 
 	fclose (input);
 	return 0; 
 }
