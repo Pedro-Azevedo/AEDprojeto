@@ -1,10 +1,13 @@
 CC=gcc
 CFLAGS=-g -Wall -ansi -pedantic
 
-amazeme: main.o read.o
-	$(CC) $(CFLAGS) -o amazeme main.o read.o
+amazeme: main.o read.o write.o
+	$(CC) $(CFLAGS) -o amazeme main.o read.o write.o
 
-read.o: read.c read.h
+write.o: write.c read.h write.h
+	$(CC) -c $(CFLAGS) write.c
+
+read.o: read.c read.h write.h
 	$(CC) -c $(CFLAGS) read.c
 
 main.o: main.c read.h

@@ -2,7 +2,7 @@
  *
  * File Name: main.c
  * Authors:    Group 29 AED 2017/2018 2S
- * Last modified: 2018-03-28
+ * Last modified: 2018-03-30
  *
  * COMMENTS
  *		Main program
@@ -32,8 +32,8 @@
 
 int main(int argc, char *argv[]) {
 	
-	FILE* input=NULL;
-	char* name_input_file=NULL; 
+	FILE* input=NULL, *output=NULL;
+	char* name_input_file=NULL, *name_output_file=NULL; 
 	char* token = NULL;
 	
 	/* Number of arguments of different than 2 */
@@ -58,10 +58,27 @@ int main(int argc, char *argv[]) {
 	if(input==NULL)
 		exit(0);
 	
+	/*Separate the extension from the name of the file*/
+	token = strtok(name_input_file, "."); 
+	
+	name_output_file=(char*) calloc(strlen(token)+strlen(".query")+1, sizeof(char)); 
+	
+	if(name_output_file==NULL)
+		memory_allocation_error("Error: Memory not correctly allocated for name_output_file\n"); 
+		
+	strcpy(name_output_file, token); 
+	strcat(name_output_file, ".query"); 
+	
+	output=fopen(name_output_file, "w"); 
+	
+	if(output==NULL)
+		exit(0); 
+	
 	/*read the input file */ 
-	solve (input);
+	solve (input, output);
 	
 	/*close files*/ 
+	fclose (output);
 	fclose (input);
 	return 0; 
 }

@@ -2,7 +2,7 @@
  *
  * File Name: read.c
  * Authors:    Group 29 AED 2017/2018 2S
- * Last modified: 2018-03-28
+ * Last modified: 2018-03-30
  *
  * COMMENTS
  *		Implements fucntions defined in read.h
@@ -14,6 +14,8 @@
 #include <string.h>
 
 #include "read.h"
+#include "write.h"
+
 
 /*Structure to store the information of the problem*/
 struct _tableinfo{
@@ -122,12 +124,13 @@ tableinfo fill_info_table (char* information)
  *
  *****************************************************************************/
 
-void solve (FILE* input)
+void solve (FILE* input, FILE* output)
 {
 	char line[MAX_WORD] = {'\0'};
 	tableinfo info;
 	int** table=NULL;
 	int i=0; 
+	int def=0; 
 	
 	/*Read the file until the end*/
 	while (fgets(line, sizeof(line), input)!=NULL)
@@ -136,6 +139,15 @@ void solve (FILE* input)
 		if(strcmp(line, "\n")==0)
 			continue;
 		info=fill_info_table(line); /*Fill a structure with the info to solve the problem */
+		def=well_defined_problem(info); 
+		
+		if(def==-1)
+		{
+			
+			for(i=0; i<info.L; i++)
+				fgets(line, sizeof(line), input);  
+			continue; 
+		}
 		/*Allocate memory to the table*/
 		table=(int**) calloc(info.L, sizeof(int*));
 		if(table==NULL)
@@ -147,6 +159,8 @@ void solve (FILE* input)
 			table[i]=fill_table_line(line, info.C); 
 		}
 		
+		decision(info, table, output);
+		
 		/*Free the table memory for this problem*/
 		for(i=0; i<info.L; i++)
 			free(table[i]);
@@ -156,4 +170,5 @@ void solve (FILE* input)
 	
 	return; 
 }
+
 
