@@ -55,27 +55,30 @@ int sum (tableinfo info, int** table)
 	radius=info.k;
 	
 	boundaries (&left, &right, &up, &down, radius, info); 
-	sum+=uppertrianglesum(left, right, up, table, info.l-1);
-	sum+=lowertrianglesum(left, right, down, table, info.l-1);
+	sum+=uppertrianglesum(left, right, up, table, info, radius);
+	sum+=lowertrianglesum(left, right, down, table, info, radius);
 		
 	return sum; 
 }
 
 
-int uppertrianglesum (int left, int right, int up, int**table, int center)
-{
-	int bound=0; 
+int uppertrianglesum (int left, int right, int up, int**table, tableinfo info, int radius)
+{ 
 	int i=0, j=0;
 	int sum=0;
 	
-	for(i=center; i>=up; i--)
+	for(i=info.l-1; i>=up; i--)
 	{
-		for(j=left+bound; j<=right-bound; j++)
+		for(j=left; j<=right; j++)
 		{
+			if(i==info.l-1 && j==info.c-1)
+				continue;
 			if(table[i][j]>0)
 				sum+=table[i][j];	
 		}
-		bound++;	
+		radius--;	
+		left= upleft(info.c-1, radius);
+		right=downright(info.c-1, radius, info.C-1);
 	}
 	
 	return sum;
@@ -83,20 +86,21 @@ int uppertrianglesum (int left, int right, int up, int**table, int center)
 
 
 
-int lowertrianglesum (int left, int right, int down, int**table, int center)
-{
-	int bound=1; 
+int lowertrianglesum (int left, int right, int down, int**table, tableinfo info, int radius)
+{ 
 	int i=0, j=0;
 	int sum=0;
 	
-	for(i=center+1; i<=down; i++)
+	for(i=info.l-1+1; i<=down; i++)
 	{
-		for(j=left+bound; j<=right-bound; j++)
+		radius--; 
+		left= upleft(info.c-1, radius);
+		right=downright(info.c-1, radius, info.C-1);
+		for(j=left; j<=right; j++)
 		{
 			if(table[i][j]>0)
 				sum+=table[i][j];	
 		}
-		bound++;	
 	}
 	
 	return sum;
@@ -137,51 +141,49 @@ int max (tableinfo info, int** table)
 	
 	boundaries (&left, &right, &up, &down, radius, info); 
 
-	max=uppertrianglemax(left, right, up, table, info.l-1);
-	max=lowertrianglemax(left, right, down, table, info.l-1);
+	uppertrianglemax(left, right, up, table, info, radius, &max);
+	lowertrianglemax(left, right, down, table, info, radius, &max);
 	
 	return max;
 }
 
 
-int uppertrianglemax (int left, int right, int up, int**table, int center)
+void uppertrianglemax (int left, int right, int up, int**table, tableinfo info, int radius, int* max)
 {
-	int bound=0; 
 	int i=0, j=0;
-	int max=0;
 	
-	for(i=center; i>=up; i--)
+	for(i=info.l-1; i>=up; i--)
 	{
-		for(j=left+bound; j<=right-bound; j++)
+		for(j=left; j<=right; j++)
 		{
-			if(table[i][j]>max)
-				max=table[i][j];	
+			if(i==info.l-1 && j==info.c-1)
+				continue;
+			if(table[i][j]>(*max))
+				(*max)=table[i][j];	
 		}
-		bound++;	
+		radius--;	
+		left= upleft(info.c-1, radius);
+		right=downright(info.c-1, radius, info.C-1);
 	}
-	
-	return max;
 }
 
 
 
-int lowertrianglemax (int left, int right, int down, int**table, int center)
-{
-	int bound=1; 
+void lowertrianglemax (int left, int right, int down, int**table, tableinfo info, int radius, int* max)
+{ 
 	int i=0, j=0;
-	int max=0;
 	
-	for(i=center+1; i<=down; i++)
+	for(i=info.l-1+1; i<=down; i++)
 	{
-		for(j=left+bound; j<=right-bound; j++)
+		radius--; 
+		left= upleft(info.c-1, radius);
+		right=downright(info.c-1, radius, info.C-1);
+		for(j=left; j<=right; j++)
 		{
-			if(table[i][j]>max)
-				max=table[i][j];	
+			if(table[i][j]>(*max))
+				(*max)=table[i][j];	
 		}
-		bound++;	
 	}
-	
-	return max;
 }
 
 

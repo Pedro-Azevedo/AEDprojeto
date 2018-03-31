@@ -60,19 +60,13 @@ void memory_allocation_error(char* information) {
 tableinfo fill_info_table (char* information)
  {
 	tableinfo info;
-	char* token=NULL;
-	
+		
 	/*scan the information to the structure*/
 	sscanf(information, "%d %d %d %d %d", &info.L, &info.C, &info.l, &info.c, &info.k);
 	/* if info.k is zero there are 2 more parameteres to store */
 	if(info.k==0)
-	{
-		/* save the information after info.k*/
-		token=strtok(information, "0");
-		token=strtok(NULL, "0");
-		/*scan the information*/
-		sscanf(token, "%d %d", &info.l2, &info.c2);
-	}
+		/*scan the information to the structure again*/
+		sscanf(information, "%d %d %d %d %d %d %d", &info.L, &info.C, &info.l, &info.c, &info.k, &info.l2, &info.c2);
 	return info;
  }
  
@@ -143,7 +137,8 @@ void solve (FILE* input, FILE* output)
 		
 		if(def==-1)
 		{
-			
+			write_solution_info(output, info, def);
+			fprintf(output, "\n");
 			for(i=0; i<info.L; i++)
 				fgets(line, sizeof(line), input);  
 			continue; 
@@ -160,6 +155,7 @@ void solve (FILE* input, FILE* output)
 		}
 		
 		decision(info, table, output);
+		fprintf(output, "\n");
 		
 		/*Free the table memory for this problem*/
 		for(i=0; i<info.L; i++)

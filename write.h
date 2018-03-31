@@ -32,10 +32,10 @@ void walk (tableinfo, int**, FILE*);
 int well_defined_problem(tableinfo);
 int well_bound_test(int, int, int, int);
 void write_solution_info(FILE*, tableinfo, int);
-int uppertrianglesum(int, int, int, int**, int);
-int lowertrianglesum(int, int, int, int**, int); 
-int uppertrianglemax(int, int, int, int**, int);
-int lowertrianglemax(int, int, int, int**, int); 
+int uppertrianglesum(int, int, int, int**, tableinfo, int);
+int lowertrianglesum(int, int, int, int**, tableinfo, int); 
+void uppertrianglemax(int, int, int, int**, tableinfo, int, int*);
+void lowertrianglemax(int, int, int, int**, tableinfo, int, int*); 
 
 
 #endif 
