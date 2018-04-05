@@ -23,7 +23,7 @@
  * Arguments: argc - number of command-line arguments
  *            argv - table of pointers for string arguments
  * Returns: int
- * Side-Effects: none
+ * Side-Effects: opens the files to solve the problem (input file to read and output file to write)
  *
  * Description: main Program
  *
@@ -58,27 +58,32 @@ int main(int argc, char *argv[]) {
 	if(input==NULL)
 		exit(0);
 	
-	/*Separate the extension from the name of the file*/
+	/*Separate the extension from the name of the file again*/
 	token = strtok(name_input_file, "."); 
 	
+	/*Allocate memory for name_output_file and copy the token and respective extension*/ 
 	name_output_file=(char*) calloc(strlen(token)+strlen(".query")+1, sizeof(char)); 
 	
 	if(name_output_file==NULL)
 		memory_allocation_error("Error: Memory not correctly allocated for name_output_file\n"); 
-		
+	
 	strcpy(name_output_file, token); 
 	strcat(name_output_file, ".query"); 
 	
+	/*Open the output file and verify*/
 	output=fopen(name_output_file, "w"); 
 	
 	if(output==NULL)
+	{
+		free(name_output_file); /*free this string before exit*/
 		exit(0); 
-	
-	/*read the input file */ 
+	}
+	/*solve the problem -> send the input file o read and the output file to write */ 
 	solve (input, output);
 	
-	/*close files*/ 
+	/*close files and free the name-output_file string*/ 
 	fclose (output);
 	fclose (input);
+	free(name_output_file);
 	return 0; 
 }

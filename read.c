@@ -50,7 +50,7 @@ void memory_allocation_error(char* information) {
  * fill_info_table()
  *
  * Arguments: information - a string with the info to store in the structure
- * Returns: info -> a strucutre with the info of the problem to solve
+ * Returns: info -> a structure with the info of the problem to solve
  * Side-Effects: none
  *
  * Description: store in a structure the information of the problem to solve
@@ -75,11 +75,12 @@ tableinfo fill_info_table (char* information)
  * fill_table_line()
  *
  * Arguments: line - string with the numbers to store in the line of the table 
- * 		      cols - number os columns in the table. 
+ * 		      cols - number of columns on the table. 
  * Returns: the line of the table filled with the numbers
  * Side-Effects: none
  *
- * Description: read a line of the file with numbers to store in a line of the table
+ * Description: read a line of the file with numbers to store in a line 
+ *              of the table
  *
  *****************************************************************************/
  
@@ -110,9 +111,14 @@ tableinfo fill_info_table (char* information)
  * solve()
  *
  * Arguments: input - input file to read to solve 
+ * 			  output - output file to write the solution
  * Returns: (void)
- * Side-Effects: reads from the file, save the problem information on a structure, store memory for the table 
- * 			     and fill it with the info from the file (line by line, using other function). 
+ * Side-Effects: reads from the file, save the problem information on a 
+ * 				 structure, store memory for the table and fill it with 
+ * 				 the info from the file (line by line, using other function). 
+ * 				 It also works the information: tests the validity and calls 
+ * 				 other functions to either solve the problem or to write on the 
+ * 				 output file
  *
  * Description: solve the problem(s)
  *
@@ -120,11 +126,10 @@ tableinfo fill_info_table (char* information)
 
 void solve (FILE* input, FILE* output)
 {
-	char line[MAX_WORD] = {'\0'};
-	tableinfo info;
+	char line[MAX_WORD] = {'\0'}; /*buffer line to read lines from the file*/
+	tableinfo info; /*structure to store information to solve the problem*/
 	int** table=NULL;
-	int i=0; 
-	int def=0; 
+	int i=0, def=0; 
 	
 	/*Read the file until the end*/
 	while (fgets(line, sizeof(line), input)!=NULL)
@@ -132,35 +137,48 @@ void solve (FILE* input, FILE* output)
 		/*Skip an empty line*/
 		if(strcmp(line, "\n")==0)
 			continue;
+			
 		info=fill_info_table(line); /*Fill a structure with the info to solve the problem */
-		def=well_defined_problem(info); 
+		def=well_defined_problem(info); /*Test if the parameters are valid*/
 		
+		/*Problem with non valid parameters*/
 		if(def==-1)
 		{
-			write_solution_info(output, info, def);
-			fprintf(output, "\n");
+			write_solution_info(output, info, def); /*repeat the first line of the problem*/
+			fprintf(output, "\n"); /*put an empty line, to separate from the next problem*/
+			/*Skip the lines with the table */
 			for(i=0; i<info.L; i++)
 				fgets(line, sizeof(line), input);  
 			continue; 
 		}
-		/*Allocate memory to the table*/
+		
+		/*Problem with valid parameters*/
+		
+		/*Allocate memory for the table and verify*/
 		table=(int**) calloc(info.L, sizeof(int*));
 		if(table==NULL)
 			memory_allocation_error("Error: Could not allocate memory for table");
-		/*Work on the lines of the table: real the line from the file and fill it in other function */
+			
+		/*Work on the lines of the table: read the line from the file and fill it in  
+		 * the table using other function */
 		for(i=0; i<info.L; i++)
 		{
 			fgets(line, sizeof(line), input); 
 			table[i]=fill_table_line(line, info.C); 
 		}
 		
+		/*Now that the table is filled, we analyse our info to solve the problem
+		 * that will be done with other function*/
 		decision(info, table, output);
+		
+		/*The problem was solved. Print an empty line to separate the next problem*/
 		fprintf(output, "\n");
 		
-		/*Free the table memory for this problem*/
+		/*Free the memory of the table for this problem*/
 		for(i=0; i<info.L; i++)
 			free(table[i]);
 		free (table);
+		
 		/*Continue to the next problem*/
 	}
 	
