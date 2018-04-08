@@ -28,6 +28,126 @@ struct _tableinfo{
 	int c2;
 };
 
+/******************************************************************************
+ * getL ()
+ *
+ * Arguments: info - pointer to structure with the problem information
+ * Returns: parameter L of the structure
+ * Side-Effects: exits the program
+ *
+ * Description: function to access the parameter L of the structure
+ *
+ *****************************************************************************/
+
+
+int getL (tableinfo *info)
+{
+	return info->L;
+}
+
+
+/******************************************************************************
+ * getC ()
+ *
+ * Arguments: info - pointer to structure with the problem information
+ * Returns: parameter C of the structure
+ * Side-Effects: exits the program
+ *
+ * Description: function to access the parameter C of the structure
+ *
+ *****************************************************************************/
+
+int getC (tableinfo *info)
+{
+	return info->C;
+}
+
+
+
+/******************************************************************************
+ * lget ()
+ *
+ * Arguments: info - pointer to structure with the problem information
+ * Returns: parameter l of the structure
+ * Side-Effects: exits the program
+ *
+ * Description: function to access the parameter l of the structure
+ *
+ *****************************************************************************/
+ 
+int lget (tableinfo *info)
+{
+	return info->l;
+}
+
+
+/******************************************************************************
+ * cget ()
+ *
+ * Arguments: info - pointer to structure with the problem information
+ * Returns: parameter c of the structure
+ * Side-Effects: exits the program
+ *
+ * Description: function to access the parameter c of the structure
+ *
+ *****************************************************************************/
+
+int cget (tableinfo *info)
+{
+	return info->c;
+}
+
+
+/******************************************************************************
+ * kget ()
+ *
+ * Arguments: info - pointer to structure with the problem information
+ * Returns: parameter k of the structure
+ * Side-Effects: exits the program
+ *
+ * Description: function to access the parameter k of the structure
+ *
+ *****************************************************************************/
+
+int kget (tableinfo *info)
+{
+	return info->k;
+}
+
+
+/******************************************************************************
+ * l2get ()
+ *
+ * Arguments: info - pointer to structure with the problem information
+ * Returns: parameter l2 of the structure
+ * Side-Effects: exits the program
+ *
+ * Description: function to access the parameter l2 of the structure
+ *
+ *****************************************************************************/
+
+int l2get (tableinfo *info)
+{
+	return info->l2;
+}
+
+
+/******************************************************************************
+ * c2get ()
+ *
+ * Arguments: info - pointer to structure with the problem information
+ * Returns: parameter c2 of the structure
+ * Side-Effects: exits the program
+ *
+ * Description: function to access the parameter c2 of the structure
+ *
+ *****************************************************************************/
+
+int c2get (tableinfo *info)
+{
+	return info->c2;
+}
+
 
 /******************************************************************************
  * memory_allocation_error ()
@@ -139,15 +259,15 @@ void solve (FILE* input, FILE* output)
 			continue;
 			
 		info=fill_info_table(line); /*Fill a structure with the info to solve the problem */
-		def=well_defined_problem(info); /*Test if the parameters are valid*/
+		def=well_defined_problem(&info); /*Test if the parameters are valid*/
 		
 		/*Problem with non valid parameters*/
 		if(def==-1)
 		{
-			write_solution_info(output, info, def); /*repeat the first line of the problem*/
+			write_solution_info(output, &info, def); /*repeat the first line of the problem*/
 			fprintf(output, "\n"); /*put an empty line, to separate from the next problem*/
 			/*Skip the lines with the table */
-			for(i=0; i<info.L; i++)
+			for(i=0; i<getL(&info); i++)
 				fgets(line, sizeof(line), input);  
 			continue; 
 		}
@@ -155,27 +275,27 @@ void solve (FILE* input, FILE* output)
 		/*Problem with valid parameters*/
 		
 		/*Allocate memory for the table and verify*/
-		table=(int**) calloc(info.L, sizeof(int*));
+		table=(int**) calloc(getL(&info), sizeof(int*));
 		if(table==NULL)
 			memory_allocation_error("Error: Could not allocate memory for table");
 			
 		/*Work on the lines of the table: read the line from the file and fill it in  
 		 * the table using other function */
-		for(i=0; i<info.L; i++)
+		for(i=0; i<getL(&info); i++)
 		{
 			fgets(line, sizeof(line), input); 
-			table[i]=fill_table_line(line, info.C); 
+			table[i]=fill_table_line(line, getC(&info)); 
 		}
 		
 		/*Now that the table is filled, we analyse our info to solve the problem
 		 * that will be done with other function*/
-		decision(info, table, output);
+		decision(&info, table, output);
 		
 		/*The problem was solved. Print an empty line to separate the next problem*/
 		fprintf(output, "\n");
 		
 		/*Free the memory of the table for this problem*/
-		for(i=0; i<info.L; i++)
+		for(i=0; i<getL(&info); i++)
 			free(table[i]);
 		free (table);
 		
@@ -184,5 +304,4 @@ void solve (FILE* input, FILE* output)
 	
 	return; 
 }
-
 

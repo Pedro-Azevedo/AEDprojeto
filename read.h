@@ -20,7 +20,6 @@
 #include <strings.h>
 
 #define MAX_WORD 10000
-#define Item void*
 
 
 typedef struct _tableinfo tableinfo;
@@ -29,5 +28,13 @@ void solve (FILE*, FILE*);
 tableinfo fill_info_table(char*);
 int* fill_table_line(char*, int); 
 void memory_allocation_error(char*);
+int getL (tableinfo *info);
+int getC (tableinfo *info); 
+int lget (tableinfo *info); 
+int cget (tableinfo *info);
+int kget (tableinfo *info);
+int l2get (tableinfo *info);
+int c2get (tableinfo *info); 
+
 
 #endif 
