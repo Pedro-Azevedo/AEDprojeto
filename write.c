@@ -1,12 +1,12 @@
 
 /******************************************************************************
  *
- * File Name: read.c
+ * File Name: write.c
  * Authors:    Group 29 AED 2017/2018 2S
  * Last modified: 2018-03-30
  *
  * COMMENTS
- *		Implements fucntions defined in paths.h
+ *		Implements fucntions defined in write.h
  *
  *****************************************************************************/
 
