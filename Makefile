@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -ansi -pedantic
+CFLAGS=-Wall -ansi -O3
 
 amazeme: main.o read.o write.o
 	$(CC) $(CFLAGS) -o amazeme main.o read.o write.o

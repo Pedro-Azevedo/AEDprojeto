@@ -150,23 +150,6 @@ int c2get (tableinfo *info)
 
 
 /******************************************************************************
- * memory_allocation_error ()
- *
- * Arguments: information - string to print with the memory error
- * Returns: (void)
- * Side-Effects: exits the program
- *
- * Description: message function when memory is not correctly allocated
- *
- *****************************************************************************/
-
-void memory_allocation_error(char* information) {
-
-  printf("%s\n", information);
-  exit(1);
-}
-
-/******************************************************************************
  * fill_info_table()
  *
  * Arguments: information - a string with the info to store in the structure
@@ -177,54 +160,32 @@ void memory_allocation_error(char* information) {
  *
  *****************************************************************************/
  
-tableinfo fill_info_table (char* information)
+tableinfo fill_info_table (FILE* input)
  {
 	tableinfo info;
+	int def;
 		
 	/*scan the information to the structure*/
-	sscanf(information, "%d %d %d %d %d", &info.L, &info.C, &info.l, &info.c, &info.k);
+	def=fscanf(input, "%d", &info.L);
+	def=fscanf(input, "%d", &info.C);
+	def=fscanf(input, "%d", &info.l);
+	def=fscanf(input, "%d", &info.c); 
+	def=fscanf(input, "%d", &info.k);
+	
 	/* if info.k is zero there are 2 more parameteres to store */
 	if(info.k==0)
+	{
 		/*scan the information to the structure again*/
-		sscanf(information, "%d %d %d %d %d %d %d", &info.L, &info.C, &info.l, &info.c, &info.k, &info.l2, &info.c2);
+		def=fscanf(input, "%d", &info.l2);
+		def=fscanf(input, "%d", &info.c2);
+	}
+
+    if(def<0)
+	  exit(0);
+
 	return info;
  }
  
- 
- /******************************************************************************
- * fill_table_line()
- *
- * Arguments: line - string with the numbers to store in the line of the table 
- * 		      cols - number of columns on the table. 
- * Returns: the line of the table filled with the numbers
- * Side-Effects: none
- *
- * Description: read a line of the file with numbers to store in a line 
- *              of the table
- *
- *****************************************************************************/
- 
- int* fill_table_line (char* line, int cols)
- {
-	 char* token=NULL;
-	 int* tableline=NULL;
-	 int j=0;
-	 
-	 /*Allocate memory to the line of the table*/
-	 tableline=(int*)calloc(cols, sizeof(int));
-	 if(tableline==NULL)
-		memory_allocation_error("Error: Could not allocate memory for tableline");
-	 
-	 /* Save the numbers (separated by a space) in the positions of the table line*/
-	 token=strtok(line, " ");
-	 for(j=0; j<cols; j++)
-	 {
-		 sscanf(token, "%d", &tableline[j]);
-		 token=strtok(NULL, " ");  
-	 }
-	 
-	 return tableline;
- }
  
 
 /******************************************************************************
@@ -246,19 +207,14 @@ tableinfo fill_info_table (char* information)
 
 void solve (FILE* input, FILE* output)
 {
-	char line[MAX_WORD] = {'\0'}; /*buffer line to read lines from the file*/
 	tableinfo info; /*structure to store information to solve the problem*/
 	int** table=NULL;
-	int i=0, def=0; 
+	int i=0, j=0, def=0, test=0;
 	
 	/*Read the file until the end*/
-	while (fgets(line, sizeof(line), input)!=NULL)
-	{
-		/*Skip an empty line*/
-		if(strcmp(line, "\n")==0)
-			continue;
-			
-		info=fill_info_table(line); /*Fill a structure with the info to solve the problem */
+	while (!feof(input))
+	{ 	
+		info=fill_info_table(input); /*Fill a structure with the info to solve the problem */
 		def=well_defined_problem(&info); /*Test if the parameters are valid*/
 		
 		/*Problem with non valid parameters*/
@@ -267,8 +223,10 @@ void solve (FILE* input, FILE* output)
 			write_solution_info(output, &info, def); /*repeat the first line of the problem*/
 			fprintf(output, "\n"); /*put an empty line, to separate from the next problem*/
 			/*Skip the lines with the table */
-			for(i=0; i<getL(&info); i++)
-				fgets(line, sizeof(line), input);  
+			for(i=0; i<getL(&info)*getC(&info); i++)
+			{
+				def=fscanf(input, "%d", &test);
+			}
 			continue; 
 		}
 		
@@ -277,15 +235,20 @@ void solve (FILE* input, FILE* output)
 		/*Allocate memory for the table and verify*/
 		table=(int**) calloc(getL(&info), sizeof(int*));
 		if(table==NULL)
-			memory_allocation_error("Error: Could not allocate memory for table");
+			exit(0);
 			
 		/*Work on the lines of the table: read the line from the file and fill it in  
 		 * the table using other function */
 		for(i=0; i<getL(&info); i++)
 		{
-			fgets(line, sizeof(line), input); 
-			table[i]=fill_table_line(line, getC(&info)); 
+			table[i]=(int*)calloc(getC(&info), sizeof(int));
+			if(table[i]==NULL)
+				exit(0);
+				
+			for(j=0; j<getC(&info); j++)
+				 def=fscanf(input, "%d", &table[i][j]);
 		}
+		
 		
 		/*Now that the table is filled, we analyse our info to solve the problem
 		 * that will be done with other function*/
@@ -298,7 +261,6 @@ void solve (FILE* input, FILE* output)
 		for(i=0; i<getL(&info); i++)
 			free(table[i]);
 		free (table);
-		
 		/*Continue to the next problem*/
 	}
 	

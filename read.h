@@ -25,9 +25,7 @@
 typedef struct _tableinfo tableinfo;
 
 void solve (FILE*, FILE*); 
-tableinfo fill_info_table(char*);
-int* fill_table_line(char*, int); 
-void memory_allocation_error(char*);
+tableinfo fill_info_table(FILE*);
 int getL (tableinfo *info);
 int getC (tableinfo *info); 
 int lget (tableinfo *info); 

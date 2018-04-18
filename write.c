@@ -535,7 +535,7 @@ int well_bound_test(int l, int c, int L, int C)
 {
 	int ret=0; 
 	 
-	if(l<0 || l>L || c<0 || c>C)
+	if(l<0 || l>L || c<0 || c>C || L<0 || C<0)
 		ret=-1;
 	
 	return ret;

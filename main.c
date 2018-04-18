@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 	name_output_file=(char*) calloc(strlen(token)+strlen(".query")+1, sizeof(char)); 
 	
 	if(name_output_file==NULL)
-		memory_allocation_error("Error: Memory not correctly allocated for name_output_file\n"); 
+		exit(0); 
 	
 	strcpy(name_output_file, token); 
 	strcat(name_output_file, ".query"); 
