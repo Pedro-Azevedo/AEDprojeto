@@ -19,20 +19,35 @@
 #include <stdlib.h>
 #include <strings.h>
 
-#define MAX_WORD 10000
+/*Macros to access the vector with the information to solve the problem*/
+#define L 0
+#define C 1
+#define l 2
+#define c 3
+#define k 4
+#define l2 5
+#define c2 6
 
+/*Macros to access the vector with the dimensions of the table to use*/
+#define down 0
+#define right 1
+#define up 2
+#define left 3
+#define height 4
+#define width 5
 
-typedef struct _tableinfo tableinfo;
 
 void solve (FILE*, FILE*); 
-tableinfo fill_info_table(FILE*);
-int getL (tableinfo *info);
-int getC (tableinfo *info); 
-int lget (tableinfo *info); 
-int cget (tableinfo *info);
-int kget (tableinfo *info);
-int l2get (tableinfo *info);
-int c2get (tableinfo *info); 
+int fill_info(FILE*, int*);
+int well_defined_problem(int*);
+int well_bound_test(int, int, int, int);
+int maxint (int, int); 
+int minint (int, int); 
+void boundaries(int*, int*);
+void alloc_table(int***, int*);
+void fill_table(int**, int*, int*, FILE*); 
+void free_table(int**, int*); 
+void no_solution(FILE*, FILE*, int*); 
 
 
 #endif 

@@ -20,40 +20,41 @@
 /******************************************************************************
  * decision()
  *
- * Arguments: info - pointer to structure with the information to solve the problem
+ * Arguments: info - array with the information to solve the problem
+ *            dimensions - array with the size of table
  * 			  table - table with the values. 
  * 			  output - output file to write the solution
  * 
  * Returns: (void)
  * 
- * Side-Effects: according to the value of info.k, redirects the problem to to ther functions
+ * Side-Effects: according to the value of info[k], redirects the problem to to ther functions
  *
  * Description: function to solve the problem
  *
  *****************************************************************************/
 
 
-void decision (tableinfo* info, int** table, FILE* output)
+void decision (int* info, int* dimensions, int** table, FILE* output)
 {
-	int goal=0; /* integer to store the solution if info.k!=0 */
+	int goal=0; /* integer to store the solution if info[k]!=0 */
 	
-	/*info.k positive -> sum problem */
-	if(kget(info)>0)
+	/*info[k] positive -> sum problem */
+	if(info[k]>0)
 	{
-		goal = sum(info, table);
+		goal = sum(info, dimensions, table);
 		write_solution_info(output, info, goal); 
 	}
 	
-	/*info.k negative -> max problem */
-	else if(kget(info)<0)
+	/*info[k] negative -> max problem */
+	else if(info[k]<0)
 	{
-	    goal = max(info, table); 
+	    goal = max(info, dimensions, table); 
 	    write_solution_info(output, info, goal);
 	}
 	
-	/*info.k zero -> path problem */
+	/*info[k] zero -> path problem */
 	else
-		walk(info, table, output); 
+		walk(info, dimensions, table, output); 
 	return;
 }
 
@@ -61,42 +62,47 @@ void decision (tableinfo* info, int** table, FILE* output)
 /******************************************************************************
  * sum()
  *
- * Arguments: info - pointer to structure with the information to solve the problem
+ * Arguments: info - array with the information to solve the problem
+ *            dimensions - array with the size of table
  * 			  table - table with the values. 
  * 
  * Returns: the value sum
  * 
- * Side-Effects: calculates the maximum and minimum lines to consider in the
- *               sum
+ * Side-Effects: none
  *
  * Description: function to calculate the sum of the element that are at a certain
- *              distance (radius) from a pivot 
+ *              distance from a pivot 
  *
  *****************************************************************************/
 
-int sum (tableinfo* info, int** table)
+int sum (int* info, int* dimensions, int** table)
 {
-	int sum=0, up=0, down=0, radius=0; 
+	int sum=0, i=0, j=0, transfl=0, transfc=0; 
 	
-	/*Assign to radius the distance from the pivot to consider*/
-	radius=kget(info);
+	/*Transformation of coordinates of the pivot (l, c) on the original map to the
+	 * considered table*/
+	transfl=info[l]-1-dimensions[up];
+	transfc=info[c]-1-dimensions[left];
 	
-	/*Determine the upper and lower lines to consider in the sum*/
-	/*we use info.l-1 because the vector is numbered from 0 to L-1 
-	 * but on the info we refer the points using [1,L]*/
-	up=upleft(lget(info)-1, radius); 
-	down=downright(lget(info)-1, radius, getL(info)-1);
+	/*Go through the table*/
+	for(i=0; i<dimensions[height]; i++)
+	{
+		for(j=0; j<dimensions[width]; j++)
+		{
+			/*Skip the pivot*/
+			if(i==transfl && j==transfc)
+				continue;
+				
+			/*We sum the element if its distance from the pivot is less or equal info[k]*/
+			if(abs(transfl-i)+abs(transfc-j)<=info[k]) 
+			{
+				/*We sum teh element if it is positive*/
+				if(table[i][j]>0)
+					sum+=table[i][j];
+			} 
+		}
+	}
 	
-	/*Strategy: we will split the problem into 2 separate problem: 
-	 * first: we'll determine the sum in the lines above the line with
-	 *        the pivot (including the line with the pivot)
-	 * second: we'll determine the sum in the lines below the line with
-	 *         the pivot
-	*/
-	sum+=uppertrianglesum(table, info, up, radius);
-	sum+=lowertrianglesum(table, info, down, radius);
-		
-	/*Note that if we only find negative values, sum will be zero*/
 	return sum; 
 }
 
@@ -105,7 +111,7 @@ int sum (tableinfo* info, int** table)
  * upleft()
  *
  * Arguments: pos - pivot in the table
- * 			  radius - maximum distance to the pivot
+ * 			  r - maximum distance to the pivot
  * 
  * Returns: the maximum limit either above or on the left of the pivot
  * 
@@ -139,7 +145,8 @@ int upleft (int pos, int r)
  * downright()
  *
  * Arguments: pos - pivot in the table
- * 			  radius - maximum distance to the pivot
+ * 			  r - maximum distance to the pivot
+ *            lim - limit of the table (L or C)
  * 
  * Returns: the maximum limit either under or on the right of the pivot
  * 
@@ -168,247 +175,59 @@ int downright (int pos, int r, int lim)
 }
 
 
-/******************************************************************************
- * uppertrianglesum()
- *
- * Arguments: table - table with the values. 
- *            info - pointer to structure with the information to solve the problem
- *            up - minimum line on the table to consider
- *            radius - distance from the pivot to consider calculating the sum
- * 
- * Returns: the value sum
- * 
- * Side-Effects: none
- *
- * Description: function to calculate the sum of the element that are at a certain
- *              distance (radius) from a pivot on the lines above it
- *
- *****************************************************************************/
-
-int uppertrianglesum (int**table, tableinfo* info, int up, int radius)
-{ 
-	int i=0, j=0, left=0, right=0, sum=0;
-	
-	/*we'll iterate from the line of the pivot [info.l - 1 (-1 because of the
-	 * numbering of the lines and columns being [0, L-1] and [0, C-1], but we
-	 * access them using [1, L] and [1,C])*/
-	  
-	for(i=lget(info)-1; i>=up; i--)
-	{
-		left= upleft(cget(info)-1, radius); /*determine the minimum column to consider*/
-		right=downright(cget(info)-1, radius, getC(info)-1); /*determine the maximum column to consider*/
-		
-		for(j=left; j<=right; j++)
-		{
-			/*Skip the pivot*/
-			if(i==lget(info)-1 && j==cget(info)-1)
-				continue;
-			
-			/*If the value [i,j] on the table is positive, we add it to the sum*/
-			if(table[i][j]>0)
-				sum+=table[i][j];	
-		}
-		
-		/*Now we decrement the variable radius because as we walk to lines farther from the
-		 * pivot, the distance to go for the left or for the right shrinks (we need to 
-		 * respect the number of steps we can walk -> input value i.e. initial value of radius)
-		 * */
-		radius--;	
-	}
-	
-	return sum;
-}
-
-
-/******************************************************************************
- * lowertrianglesum()
- *
- * Arguments: table - table with the values. 
- *            info - pointer to structure with the information to solve the problem
- *            down - maximum line on the table to consider
- *            radius - distance from the pivot to consider calculating the sum
- * 
- * Returns: the value sum
- * 
- * Side-Effects: none
- *
- * Description: function to calculate the sum of the element that are at a certain
- *              distance (radius) from a pivot on the lines below it
- *
- *****************************************************************************/
-
-
-int lowertrianglesum (int**table, tableinfo* info, int down, int radius)
-{ 
-	int i=0, j=0, left=0, right=0, sum=0;
-	
-	/*we'll iterate from the line below the pivot [info.l - 1 +1 (-1 because of the
-	 * numbering of the lines and columns being [0, L-1] and [0, C-1], but we
-	 * access them using [1, L] and [1,C]; +1 to go below)*/
-	 
-	for(i=lget(info)-1+1; i<=down; i++)
-	{
-		/*Now we decrement the variable radius because as we walk to lines farther from the
-		 * pivot, the distance to go for the left or for the right shrinks (we need to 
-		 * respect the number of steps we can walk -> input value i.e. initial value of radius)
-		 * */
-		radius--; 
-		left= upleft(cget(info)-1, radius); /*determine the minimum column to consider*/
-		right=downright(cget(info)-1, radius, getC(info)-1); /*determine the maximum column to consider*/
-		for(j=left; j<=right; j++)
-		{
-			/*If the value [i,j] on the table is positive, we add it to the sum*/
-			if(table[i][j]>0)
-				sum+=table[i][j];	
-		}
-	}
-	
-	return sum;
-}
-
 
 /******************************************************************************
  * max()
  *
- * Arguments: info - pointer to structure with the information to solve the problem
+ * Arguments: info - array with the information to solve the problem
+ *            dimensions - array with the size of table
  * 			  table - table with the values. 
  * 
  * Returns: the value max
  * 
- * Side-Effects: calculates the maximum and minimum lines to consider in the
- *               claclulation of the max value
+ * Side-Effects: none
  *
  * Description: function to calculate the max element that is at a certain
- *              distance (radius) from a pivot 
+ *              distance from a pivot 
  *
  *****************************************************************************/
 
-int max (tableinfo* info, int** table)
+int max (int* info, int*dimensions, int** table)
 {
-	int max=0, up=0, down=0, radius=0; 
-	
-	/*Assign to radius the distance from the pivot to consider
-	 * minus sign because info.k is negative */
-	radius= - kget(info);
-	
-	/*Determine the upper and lower lines to consider in the sum*/
-	/*we use info.l-1 because the vector is numbered from 0 to L-1 
-	 * but on the info we refer the points using [1,L]*/
-	up=upleft(lget(info)-1, radius); 
-	down=downright(lget(info)-1, radius, getL(info)-1);
-	
-
-    /*Strategy: we will split the problem into 2 separate problem: 
-	 * first: we'll check the lines above the line with the pivot 
-	 *       (including the line with the pivot)
-	 * second: we'll check lines below the line with the pivot
-	*/
-	uppertrianglemax(table, info, up, radius, &max);
-	lowertrianglemax(table, info, down, radius, &max);
-	
-	/*Note that if we only find negative values, max will be zero*/
-	
-	return max;
-}
-
-
-/******************************************************************************
- * uppertrianglemax()
- *
- * Arguments: table - table with the values. 
- *            info - pointer to structure with the information to solve the problem
- *            up - minimum line on the table to consider
- *            radius - distance from the pivot to consider calculating the max
- *            max - max value (passed by reference)
- * 
- * Returns: void
- * 
- * Side-Effects: none
- *
- * Description: function to look for the max element that is at a certain
- *              distance (radius) from a pivot on the lines above it
- *
- *****************************************************************************/
-
-void uppertrianglemax (int**table, tableinfo* info, int up, int radius, int* max)
-{
-	int i=0, j=0, left=0, right=0;
-	
-	/*we'll iterate from the line of the pivot [info.l - 1 (-1 because of the
-	 * numbering of the lines and columns being [0, L-1] and [0, C-1], but we
-	 * access them using [1, L] and [1,C])*/ 
-	for(i=lget(info)-1; i>=up; i--)
-	{
-		left= upleft(cget(info)-1, radius); /*determine the minimum column to consider*/
-		right=downright(cget(info)-1, radius, getC(info)-1); /*determine the maximum column to consider*/
+	int max=0, i=0, j=0, transfl=0, transfc=0; 
 		
-		for(j=left; j<=right; j++)
+	/*Transformation of coordinates of the pivot (l, c) on the original map to the
+	 * considered table*/
+	 
+	transfl=info[l]-1-dimensions[up];
+	transfc=info[c]-1-dimensions[left];
+
+	/*Go through the table*/
+	for(i=0; i<dimensions[height]; i++)
+	{ 
+		for(j=0; j<dimensions[width]; j++)
 		{
 			/*Skip the pivot*/
-			if(i==lget(info)-1 && j==cget(info)-1)
+			if(i==transfl && j==transfc)
 				continue;
-			/*If the value [i,j] on the table is greater than max, we have a new max value*/
-			if(table[i][j]>(*max))
-				(*max)=table[i][j];	
-		}
-		
-		/*Now we decrement the variable radius because as we walk to lines farther from the
-		 * pivot, the distance to go for the left or for the right shrinks (we need to 
-		 * respect the number of steps we can walk -> input value i.e. initial value of radius)
-		 * */
-		radius--;	
-	}
-}
-
-
-/******************************************************************************
- * lowertrianglemax()
- *
- * Arguments: table - table with the values. 
- *            info - pointer to structure with the information to solve the problem
- *            down - maximum line on the table to consider
- *            radius - distance from the pivot to consider calculating the max
- *            max - max value (passed by reference)
- * 
- * Returns: void
- * 
- * Side-Effects: none
- *
- * Description: function to look for the max element that is at a certain
- *              distance (radius) from a pivot on the lines below it
- *
- *****************************************************************************/
-
-void lowertrianglemax (int**table, tableinfo* info, int down, int radius, int* max)
-{ 
-	int i=0, j=0, left=0, right=0;
-	
-	/*we'll iterate from the line below the pivot [info.l - 1 +1 (-1 because of the
-	 * numbering of the lines and columns being [0, L-1] and [0, C-1], but we
-	 * access them using [1, L] and [1,C]; +1 to go below)*/
-	for(i=lget(info)-1+1; i<=down; i++)
-	{
-		/*Now we decrement the variable radius because as we walk to lines farther from the
-		 * pivot, the distance to go for the left or for the right shrinks (we need to 
-		 * respect the number of steps we can walk -> input value i.e. initial value of radius)
-		 * */
-		radius--; 
-		left= upleft(cget(info)-1, radius); /*determine the minimum column to consider*/
-		right=downright(cget(info)-1, radius, getC(info)-1); /*determine the maximum column to consider*/
-		for(j=left; j<=right; j++)
-		{
-			if(table[i][j]>(*max))
-				(*max)=table[i][j];	
+				
+			/*We consider the element if its distance from the pivot is less or equal info[k]*/
+			if(abs(transfl-i)+abs(transfc-j)<=abs(info[k])) 
+			{
+				/*If the element is great than "max" it is the new max*/
+				if(table[i][j]>max)
+					max=table[i][j];
+			} 
 		}
 	}
+	return max; 
 }
-
-	
 
 /******************************************************************************
  * walk()
  *
- * Arguments: info - pointer to structure with the information to solve the problem
+ * Arguments: info - array with the information to solve the problem
+ *            dimensions - array with the size of table
  * 			  table - table with the values. 
  *            output - output file to write the solution
  * 
@@ -421,7 +240,7 @@ void lowertrianglemax (int**table, tableinfo* info, int down, int radius, int* m
  *
  *****************************************************************************/
 
-void walk(tableinfo* info, int** table, FILE*output)
+void walk(int* info, int* dimensions, int** table, FILE*output)
 {
 	int i=0, j=0; 
 	
@@ -429,17 +248,15 @@ void walk(tableinfo* info, int** table, FILE*output)
 	write_solution_info(output, info, 0); 
 	
 	/*We set the iteration variables to the initial point*/
-	/* Note that we use (info.l- 1, info.c-1) because the
-	 * numbering of the lines and columns is [0, L-1] and 
-	 * [0, C-1],but we access the table using [1, L] and [1,C]*/
-	i=lget(info)-1;
-	j=cget(info)-1;
+	/*We apply a Transformation of Coordinates*/
+	i=info[l]-1-dimensions[up];
+	j=info[c]-1-dimensions[left];
 	
 	/*We start to go through the lines until we reach info.l2-1*/
-	while(i!=l2get(info)-1)
+	while(i!=info[l2]-1-dimensions[up])
     {
 		/*if the point (l,c) is above (l2, c2) we need to go down*/
-		if(i<l2get(info)-1)
+		if(i<info[l2]-1-dimensions[up])
 			i++;
 			
 		/*else, we go up*/
@@ -448,17 +265,15 @@ void walk(tableinfo* info, int** table, FILE*output)
 			
 	    /*for each iteration we print on the output file the coordinates we
 	     * are before the next iteration. We also print the value of [i][j]
-	     * on the table. Note that this time we use i+1 and j+1 for the same 
-	     * reason mentioned above about the real limits of the table and the 
-	     * limits we use to mention it*/		
-		fprintf(output, "%d %d %d\n", i+1, j+1, table[i][j]); 
+	     * on the table. Note that we reverse the transformation of coordinates*/		
+		fprintf(output, "%d %d %d\n", i+1+dimensions[up], j+1+dimensions[left], table[i][j]); 
 	}
 	
 	/*Now we go through the columns until we reach info.c2-1*/
-	while(j!=c2get(info)-1)
+	while(j!=info[c2]-1-dimensions[left])
 	{
 		/*if the point (l,c) is on the left of (l2, c2) we need to go to the right*/
-		if(j<c2get(info)-1)
+		if(j<info[c2]-1-dimensions[left])
 			j++;
 		
 		/*else, we go to the left*/
@@ -466,80 +281,11 @@ void walk(tableinfo* info, int** table, FILE*output)
 			j--; 
 		
         /*Same case as listed above*/
-		fprintf(output, "%d %d %d\n", i+1, j+1, table[i][j]); 
+		fprintf(output, "%d %d %d\n", i+1+dimensions[up], j+1+dimensions[left], table[i][j]); 
 	}
 	
+	return;
 		
-}
-
-
-/******************************************************************************
- * well_defined_problem()
- *
- * Arguments: info - pointer to structure with the problem info
- * 			  
- * Returns: 0 -> SUCCESS (valid info); -1 -> UNSUCCESS
- * 
- * Side-Effects: uses other function to test if the point (l,c) is in the table.
- *               does the same with (l2, c2), if applicable
- *
- * Description: tests the informations of the problem
- *
- *****************************************************************************/
-
-
-int well_defined_problem(tableinfo* info)
-{
-	int ret=0; /*test variable*/
-	
-	/* Note that we use (info.l- 1, info.c-1) because the
-	 * numbering of the lines and columns is [0, L-1] and 
-	 * [0, C-1],but we access the table using [1, L] and [1,C]*/
-	
-	/*test if (l,c) is on the table*/
-	ret=well_bound_test(lget(info)-1, cget(info)-1, getL(info)-1, getC(info)-1); 
-	
-	/*if it's not, we immediately return*/
-	
-	if(ret==-1)
-		return ret;
-		
-	/*if it passed the previous test and info.k is 0, then we have 
-	 * other pair (l2, c2) to test*/
-	
-	if(kget(info)==0) 
-		ret=well_bound_test(l2get(info)-1, c2get(info)-1, getL(info)-1, getC(info)-1); 
-	
-	return ret;
-	
-}
-
-
-/******************************************************************************
- * well_bound_test()
- *
- * Arguments: l and c - coordinates of the point to test 
- * 			  L - number of lines[1 to L] of the table
- * 			  C - number of columns[1 to C] of the table
- *  
- * 
- * Returns: 0 -> SUCCESS (valid info); -1 -> UNSUCCESS
- * 
- * Side-Effects: none
- *
- * Description: tests if the coordinates (l,c) of a point are within a table
- *
- *****************************************************************************/
-
-int well_bound_test(int l, int c, int L, int C)
-{
-	int ret=0; 
-	 
-	if(l<0 || l>L || c<0 || c>C || L<0 || C<0)
-		ret=-1;
-	
-	return ret;
-	
 }
 
 
@@ -547,7 +293,7 @@ int well_bound_test(int l, int c, int L, int C)
  * write_solution_info()
  *
  * Arguments: output - file to write the solution
- * 			  info - pointer to structure with the information to solve the problem
+ * 			  info - array with the information to solve the problem
  * 			  res - parameter the solution value or -1 (problem without solution)
  *  
  * 
@@ -556,28 +302,25 @@ int well_bound_test(int l, int c, int L, int C)
  * Side-Effects: none
  *
  * Description: writes the information of the problem on the output file and the
- *  			result in the case of valid parameters and info.k!=0
+ *  			result in the case of valid parameters and info[k]!=0
  *
  *****************************************************************************/
 
 
-void write_solution_info(FILE* output, tableinfo* info, int res)
+void write_solution_info(FILE* output, int* info, int res)
 {
-	/*if info.k is zero we repeat the first line of the problem either if it has solution or not*/
-	if(kget(info)==0)
-		fprintf(output, "%d %d %d %d %d %d %d\n", getL(info), getC(info), lget(info), cget(info), 
-		                                          kget(info), l2get(info), c2get(info)); 
+	/*if info[k] is zero we repeat the first line of the problem either if it has solution or not*/
+
+	if(info[k]==0) 
+		fprintf(output, "%d %d %d %d %d %d %d\n", info[L], info[C], info[l], info[c], info[k], info[l2], info[c2]);
 	
+	/* else if info[k]!=0 and the problem doesn't have a solution we only print the info*/
+	else if(res==-1)
+		fprintf(output, "%d %d %d %d %d\n", info[L], info[C], info[l], info[c], info[k]);
+	
+	/*if info[k]=0 and it has solution we print the info and the result*/
 	else
-	{
-		/*invalid parameters -> problem without solution -> just print the information*/	
-		if(res==-1)
-			fprintf(output, "%d %d %d %d %d\n", getL(info), getC(info), lget(info), cget(info), kget(info)); 
-		
-		/*valid parameters -> problem with solution -> print the information plus the solution*/
-		else
-			fprintf(output, "%d %d %d %d %d %d\n", getL(info), getC(info), lget(info), cget(info), kget(info), res); 
-	}
+		fprintf(output, "%d %d %d %d %d %d\n", info[L], info[C], info[l], info[c], info[k], res);
+
 	return;
 }
-
