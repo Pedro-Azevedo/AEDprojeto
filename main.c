@@ -46,12 +46,12 @@ int main(int argc, char *argv[]) {
 	token = strtok(name_input_file, "."); 
 	token = strtok(NULL, "."); 
 	
-	/* Verify if the extension either doesn't exist or is different than 1maps)*/
-	if(token==NULL || strcmp(token, "1maps")!=0)
+	/* Verify if the extension either doesn't exist or is different than maps)*/
+	if(token==NULL || strcmp(token, "maps")!=0)
 		exit(0); 
 	
 	/*Put the extension again on the file name*/
-	strcat(name_input_file, ".1maps");
+	strcat(name_input_file, ".maps");
 	/*Open the file and verify*/
 	input = fopen(name_input_file, "r");
 	
@@ -62,13 +62,13 @@ int main(int argc, char *argv[]) {
 	token = strtok(name_input_file, "."); 
 	
 	/*Allocate memory for name_output_file and copy the token and respective extension*/ 
-	name_output_file=(char*) calloc(strlen(token)+strlen(".query")+1, sizeof(char)); 
+	name_output_file=(char*) calloc(strlen(token)+strlen(".paths")+1, sizeof(char)); 
 	
 	if(name_output_file==NULL)
 		exit(0); 
 	
 	strcpy(name_output_file, token); 
-	strcat(name_output_file, ".query"); 
+	strcat(name_output_file, ".paths"); 
 	
 	/*Open the output file and verify*/
 	output=fopen(name_output_file, "w"); 
@@ -78,12 +78,13 @@ int main(int argc, char *argv[]) {
 		free(name_output_file); /*free this string before exit*/
 		exit(0); 
 	}
-	/*solve the problem -> send the input file o read and the output file to write */ 
+	/*solve the problem -> send the input file to read and the output file to write */ 
 	solve (input, output);
 	
 	/*close files and free the name-output_file string*/ 
 	fclose (output);
 	fclose (input);
 	free(name_output_file);
+	
 	return 0; 
 }

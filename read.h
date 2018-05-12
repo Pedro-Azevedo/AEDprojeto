@@ -22,11 +22,11 @@
 /*Macros to access the vector with the information to solve the problem*/
 #define L 0
 #define C 1
-#define l 2
-#define c 3
-#define k 4
-#define l2 5
-#define c2 6
+#define o 2
+#define l 3
+#define c 4
+#define k 5
+#define E 6
 
 /*Macros to access the vector with the dimensions of the table to use*/
 #define down 0
@@ -40,7 +40,10 @@
 void solve (FILE*, FILE*); 
 int fill_info(FILE*, int*);
 int well_defined_problem(int*);
+int objective_test(int);
 int well_bound_test(int, int, int, int);
+int steps_test(int, int, int);
+int energy_test(int);
 int maxint (int, int); 
 int minint (int, int); 
 void boundaries(int*, int*);

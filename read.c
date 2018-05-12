@@ -100,19 +100,10 @@ int fill_info (FILE* input, int* info)
 	int i=L;
 			
 	/*scan the information to the array*/
-	while(i<=k)
+	while(i<=E)
 	{
 		if(fscanf(input, "%d", &info[i++])!=1)
 			return 0; 	
-	}
-	/* if k is zero there are 2 more parameteres to store */
-	if(info[k]==0)
-	{
-		while(i<=c2)
-		{
-			if(fscanf(input, "%d", &info[i++])!=1)
-				return 0;
-		}
 	}
 	return 1;
  }
@@ -138,22 +129,53 @@ int well_defined_problem(int* info)
 {
 	int ret=0; /*test variable*/
 	
+	/*test if we have a valid objective*/
+	ret=objective_test(info[o]); 
+	
+	/*if not, we immediately return*/
+	if(ret==-1)
+		return ret;
+	
 	/*test if (l,c) is on the table*/
 	ret=well_bound_test(info[l], info[c], info[L], info[C]); 
 	
-	/*if it's not, we immediately return*/
+	if(ret==-1)
+		return ret;
+	
+	/*test if k is in [0, info[L]*info[C][*/
+	ret=steps_test(info[L], info[C], info[k]); 
 	
 	if(ret==-1)
 		return ret;
-		
-	/*if it passed the previous test and info[k] is 0, then we have 
-	 * other pair (l2, c2) to test*/
 	
-	if(info[k]==0) 
-		ret=well_bound_test(info[l2], info[c2], info[L], info[C]); 
+	/*test if E is positive*/
+	ret=energy_test(info[E]);
 	
 	return ret;
 	
+}
+
+/******************************************************************************
+ * objective_test()
+ *
+ * Arguments: test - variable to test 
+ *  
+ * 
+ * Returns: 0 -> SUCCESS (valid); -1 -> UNSUCCESS
+ * 
+ * Side-Effects: none
+ *
+ * Description: tests if the objective (test) is valid (either positive or -1)
+ *
+ *****************************************************************************/
+
+
+int objective_test(int test) 
+{
+	/*If variable is positive or -2 is valid. Other than that, invalid*/
+	if(test>0 || test==-2)
+		return 0;
+	return -1;
 }
 
 
@@ -174,17 +196,63 @@ int well_defined_problem(int* info)
  *****************************************************************************/
 
 int well_bound_test(int _l, int _c, int _L, int _C)
-{
-	int ret=0; /*test variable*/
-	
+{	
 	/*We check if _l is in [1; L], if _c is in [1; C] and if 
 	 * L and C are equal or great than 1*/
 	 
 	if(_l<1 || _l>_L || _c<1 || _c>_C || _L<1 || _C<1)
-		ret=-1;
+		return -1;
 	
-	return ret;
+	return 0;
 }
+
+/******************************************************************************
+ * steps_test()
+ *
+ * Arguments: _L and _C - size of table 
+ * 			  _k - number of steps
+ *  
+ * 
+ * Returns: 0 -> SUCCESS (valid); -1 -> UNSUCCESS
+ * 
+ * Side-Effects: none
+ *
+ * Description: tests if the number of steps(_k) is in [0, _Lx_C[
+ *
+ *****************************************************************************/
+
+
+int steps_test(int _L, int _C, int _k) 
+{
+	/*If the number of steps(_k) is in [0, _Lx_C[ is valid. Other than that, invalid*/
+	if(_k>=0 && _k<=_L*_C)
+		return 0;
+	return -1;
+}
+
+/******************************************************************************
+ * energy_test()
+ *
+ * Arguments: test - variable to test 
+ *  
+ * 
+ * Returns: 0 -> SUCCESS (valid); -1 -> UNSUCCESS
+ * 
+ * Side-Effects: none
+ *
+ * Description: tests if the energy (test) is positive
+ *
+ *****************************************************************************/
+
+
+int energy_test(int test) 
+{
+	/*If variable is positive is valid. Other than that, invalid*/
+	if(test>0)
+		return 0;
+	return -1;
+}
+
 
 
 /******************************************************************************
@@ -250,34 +318,14 @@ int minint(int num1, int num2)
 
 void boundaries(int* info, int* dimensions)
 {
-	/*If we are in a problem with info[k] is zero 
-	 * our boundaries are determined by the points (l,c)
-	 * and (l2, c2)
-	 
-	 * Note that we use (info.l- 1, info.c-1) because the
-	 * numbering of the lines and columns is [0, L-1] and 
-	 * [0, C-1],but we access the table using [1, L] and [1,C] */
-	 
-	if(info[k]==0)
-	{
-		dimensions[down]=maxint(info[l2]-1, info[l]-1); 
-		dimensions[right]= maxint(info[c2]-1, info[c]-1); 
-		dimensions[up]=minint(info[l2]-1, info[l]-1); 
-		dimensions[left]=minint(info[c2]-1, info[c]-1);	
-	}
-	
-	/*If we are in a problem with info[k] non zero then it will be
-	 * info[k] that will determine the dimension of the table
+	/*It will be info[k] that will determine the dimension of the table
 	 * We are however limited by the corners of the original table 
 	 * so we have to determine this values*/
 		
-	else
-	{
-		dimensions[down]=downright(info[l]-1, abs(info[k]), info[L]-1);  
-		dimensions[right]=downright(info[c]-1, abs(info[k]), info[C]-1); 
-		dimensions[up]=upleft(info[l]-1, abs(info[k]));
-		dimensions[left]=upleft(info[c]-1, abs(info[k])); 
-	}
+	dimensions[down]=downright(info[l]-1, abs(info[k]), info[L]-1);  
+	dimensions[right]=downright(info[c]-1, abs(info[k]), info[C]-1); 
+	dimensions[up]=upleft(info[l]-1, abs(info[k]));
+	dimensions[left]=upleft(info[c]-1, abs(info[k])); 
 	
 	/*Calculate height and width of the table*/
 	dimensions[height]= dimensions[down]-dimensions[up]+1; 
@@ -426,8 +474,7 @@ void free_table(int** table, int* dimensions)
 
 void no_solution(FILE* input, FILE* output, int* info)
 {
-	int def=-1, i=0; 
-	
+	int def=-2, i=0; 
 	write_solution_info(output, info, def); /*repeat the first line of the problem*/
 	fprintf(output, "\n"); /*put an empty line, to separate from the next problem*/
 	
